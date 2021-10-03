@@ -1,0 +1,71 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "storageAccountName": {
+            "type": "string"
+        },
+        "accountType": {
+            "type": "string"
+        },
+        "kind": {
+            "type": "string"
+        },
+        "aksSubnetID": {
+            "type": "string"
+        },
+        "storageSubnetID": {
+            "type": "string"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "name": "[parameters('storageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "accessTier": "Hot",
+                "minimumTlsVersion": "TLS1_2",
+                "supportsHttpsTrafficOnly": false,
+                "allowBlobPublicAccess": true,
+                "allowSharedKeyAccess": true,
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "defaultAction": "Deny",
+                    "ipRules": [],
+                    "virtualNetworkRules": [
+                        {
+                            "id": "[parameters('aksSubnetID')]"
+                        },
+                        {
+                            "id": "[parameters('storageSubnetID')]"
+                        }
+                    ]
+                },
+                "isHnsEnabled": true,
+                "isNfsV3Enabled": true
+            },
+            "sku": {
+                "name": "[parameters('accountType')]"
+            },
+            "kind": "[parameters('kind')]",
+            "tags": {},
+            "resources": [
+            {
+            "type": "blobServices/containers",
+            "apiVersion": "2019-06-01",
+            "name": "default/hpcc-data",
+            "dependsOn": [
+                "[parameters('storageAccountName')]"
+            ]
+            }
+        ]
+        }
+    ],
+    "outputs": {}
+}
